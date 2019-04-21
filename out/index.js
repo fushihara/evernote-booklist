@@ -5,7 +5,6 @@ const utils_1 = require("./utils");
 // configで読み込むファイル名はこちら。値のマージも可能。 https://github.com/lorenwest/node-config/wiki/Configuration-Files
 const config_1 = require("config");
 const evernote_1 = require("./evernote");
-const Evernote = require('evernote');
 const log = (message) => console.log(utils_1.mergeDateformat(message));
 const app = express();
 const config = {
@@ -13,6 +12,7 @@ const config = {
         urlPort: config_1.get("express.urlPort"),
         urlPrefix: config_1.get("express.urlPrefix"),
         token: config_1.get("express.token"),
+        ACAO: config_1.get("express.ACAO"),
     },
     evernoteDeveloperToken: config_1.get("evernoteDeveloperToken")
 };
@@ -40,6 +40,7 @@ class Main {
       */
         app.get(config.express.urlPrefix, async (request, response) => {
             const token = String(request.query.token) || "";
+            response.setHeader("Access-Control-Allow-Origin", config.express.ACAO);
             if (token !== config.express.token) {
                 response.status(403).end();
                 return;
@@ -47,11 +48,13 @@ class Main {
             evernote_1.EvernoteClient.getEvernoteAllNoteData(config.evernoteDeveloperToken).then(noteBookList => {
                 response.status(200).contentType("application/json").json(noteBookList).end();
             }).catch((err) => {
-                console.log(err);
+                log(err);
+                response.status(500).end();
+                return;
             });
         });
         app.listen(config.express.urlPort, () => {
-            console.log("ready");
+            log("ready");
             log(` http://localhost:${config.express.urlPort}${config.express.urlPrefix}`);
             utils_1.getIpv4Address().forEach(address => {
                 log(` http://${address}:${config.express.urlPort}${config.express.urlPrefix}`);

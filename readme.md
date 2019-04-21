@@ -15,7 +15,8 @@ nodejsのexpressで起動する
   "express": {
     "urlPrefix": "/test/", // http://localhost:53143/test/?token=hogehoge でアクセスを通す。
     "token":"hogehoge",
-    "urlPort": 53143
+    "urlPort": 53143,
+    "ACAO":"" //レスポンスのAccess-Control-Allow-Originヘッダの値
   },
   "evernoteDeveloperToken":"" // evernoteのデベロッパトークン。結構長い文字
 }

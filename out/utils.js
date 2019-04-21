@@ -2,14 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const dateformat = require("dateformat");
 const dns = require("dns");
-async function slackにメッセージ投稿(url, メッセージ) {
-    // https://qiita.com/ik-fib/items/b4a502d173a22b3947a0
-    if (url == "") {
-        return;
-    }
-    return fetch(url, { method: "post", body: JSON.stringify({ text: メッセージ }) });
-}
-exports.slackにメッセージ投稿 = slackにメッセージ投稿;
 async function requestから接続情報を取得(request) {
     const ヘッダー = (() => {
         const r = [];

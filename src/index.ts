@@ -11,6 +11,7 @@ const config = {
     urlPort: configGet<number>("express.urlPort"),
     urlPrefix: configGet<string>("express.urlPrefix"),
     token: configGet<string>("express.token"),
+    ACAO: configGet<string>("express.ACAO"),
   },
   evernoteDeveloperToken: configGet<string>("evernoteDeveloperToken")
 };
@@ -39,6 +40,7 @@ class Main {
   */
     app.get(config.express.urlPrefix, async (request: express.Request, response: express.Response) => {
       const token = String(request.query.token) || ""
+      response.setHeader("Access-Control-Allow-Origin", config.express.ACAO);
       if (token !== config.express.token) {
         response.status(403).end();
         return;
