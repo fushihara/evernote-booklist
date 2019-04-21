@@ -1,0 +1,8 @@
+{
+  "express": {
+    "urlPrefix": "/evernote-api/",
+    "token":"",
+    "urlPort": 59044
+  },
+  "evernoteDeveloperToken":""
+}

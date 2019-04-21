@@ -1,0 +1,4 @@
+{
+  "name": "evernote-list",
+  "script": "./out/index.js"
+}
