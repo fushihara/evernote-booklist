@@ -20,3 +20,7 @@ nodejsのexpressで起動する
   "evernoteDeveloperToken":"" // evernoteのデベロッパトークン。結構長い文字
 }
 ```
+
+# todo
+
+- evernoteAPIの型がignoreしまくってるので、ちゃんとd.tsを作る
