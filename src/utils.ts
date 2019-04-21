@@ -1,13 +1,6 @@
 import * as express from "express";
 import * as dateformat from "dateformat";
 import * as dns from "dns";
-export async function slackにメッセージ投稿(url: string, メッセージ: string) {
-  // https://qiita.com/ik-fib/items/b4a502d173a22b3947a0
-  if (url == "") {
-    return;
-  }
-  return fetch(url, { method: "post", body: JSON.stringify({ text: メッセージ }) });
-}
 export async function requestから接続情報を取得(request: express.Request): Promise<{ ipアドレス: string, ホスト: string, UA: string, ヘッダー: string }> {
   const ヘッダー: string = (() => {
     const r = [];

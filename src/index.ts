@@ -1,11 +1,8 @@
 import * as express from "express";
-import { posix } from "path";
-import { mergeDateformat, getIpv4Address, requestから接続情報を取得, slackにメッセージ投稿 } from "./utils";
+import { mergeDateformat, getIpv4Address, requestから接続情報を取得 } from "./utils";
 // configで読み込むファイル名はこちら。値のマージも可能。 https://github.com/lorenwest/node-config/wiki/Configuration-Files
 import { get as configGet } from "config";
-import { sprintf } from "sprintf-js";
 import { EvernoteClient } from "./evernote";
-const Evernote = require('evernote');
 const log = (message: string) => console.log(mergeDateformat(message));
 
 const app = express();
@@ -49,11 +46,13 @@ class Main {
       EvernoteClient.getEvernoteAllNoteData(config.evernoteDeveloperToken).then(noteBookList => {
         response.status(200).contentType("application/json").json(noteBookList).end();
       }).catch((err: any) => {
-        console.log(err);
+        log(err);
+        response.status(500).end();
+        return;
       });
     });
     app.listen(config.express.urlPort, () => {
-      console.log("ready")
+      log("ready")
       log(` http://localhost:${config.express.urlPort}${config.express.urlPrefix}`);
       getIpv4Address().forEach(address => {
         log(` http://${address}:${config.express.urlPort}${config.express.urlPrefix}`);
