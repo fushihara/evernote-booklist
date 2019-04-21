@@ -30,7 +30,7 @@ export namespace EvernoteClient {
       const createdDateStr = dateFormat(createdDate, "yyyy/mm/dd HH:MM:ss");
       result.push({
         title,
-        guid: notebookGuid,
+        guid: noteGuid,
         createdDate: createdDate,
         updateDate,
         size,
