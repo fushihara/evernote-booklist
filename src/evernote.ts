@@ -1,6 +1,12 @@
 const Evernote = require("evernote");
 import * as dateFormat from "dateformat";
 export namespace EvernoteClient {
+  export type UserData = {
+    id: number,//123456
+    name: string,//あいうえお
+    shardId: string,//s123
+    username: string//aiueo
+  }
   export type NoteBook = {
     title: string,
     size: number,
@@ -8,10 +14,20 @@ export namespace EvernoteClient {
     createdDate: Date,
     guid: string,
     notebookName: string
+    notebookGuid: string
   };
-  export async function getEvernoteAllNoteData(developerToken: string): Promise<NoteBook[]> {
+  export async function getEvernoteAllNoteData(developerToken: string): Promise<{userData:UserData,noteBooks:NoteBook[]}> {
     const client = new Evernote.Client({ token: developerToken, sandbox: false });
+    const userStore = client.getUserStore();
+    const userData = await getUser(userStore);
     const noteStore = client.getNoteStore();
+    const resultUserData :UserData= {
+      id:Number(userData.id),
+      name:String(userData.name),
+      shardId:String(userData.shardId),
+      username:String(userData.username),
+    }
+
     const allNoteBooks = await getAllNotebooks(noteStore);
     for (let notebook of allNoteBooks) {
       //console.log(notebook.name + "/" + notebook.guid)
@@ -34,13 +50,20 @@ export namespace EvernoteClient {
         createdDate: createdDate,
         updateDate,
         size,
-        notebookName
+        notebookName,
+        notebookGuid
       });
       //console.log(`${String(allNote.notes.indexOf(note) + 1).padStart(3, " ")} ${createdDateStr} ${updateDateStr} ${title} (${size} byte)`);
       //console.log(`  ${notebookName}`);
     }
-    return result;
+    return {
+      noteBooks:result,
+      userData:resultUserData
+    };
   }
+}
+async function getUser(userStore: any) {
+  return await userStore.getUser();
 }
 //@ts-ignore
 async function getAllNotebooks(noteStore: Evernote.NoteStoreClient) {

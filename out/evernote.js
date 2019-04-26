@@ -6,7 +6,15 @@ var EvernoteClient;
 (function (EvernoteClient) {
     async function getEvernoteAllNoteData(developerToken) {
         const client = new Evernote.Client({ token: developerToken, sandbox: false });
+        const userStore = client.getUserStore();
+        const userData = await getUser(userStore);
         const noteStore = client.getNoteStore();
+        const resultUserData = {
+            id: Number(userData.id),
+            name: String(userData.name),
+            shardId: String(userData.shardId),
+            username: String(userData.username),
+        };
         const allNoteBooks = await getAllNotebooks(noteStore);
         for (let notebook of allNoteBooks) {
             //console.log(notebook.name + "/" + notebook.guid)
@@ -29,15 +37,22 @@ var EvernoteClient;
                 createdDate: createdDate,
                 updateDate,
                 size,
-                notebookName
+                notebookName,
+                notebookGuid
             });
             //console.log(`${String(allNote.notes.indexOf(note) + 1).padStart(3, " ")} ${createdDateStr} ${updateDateStr} ${title} (${size} byte)`);
             //console.log(`  ${notebookName}`);
         }
-        return result;
+        return {
+            noteBooks: result,
+            userData: resultUserData
+        };
     }
     EvernoteClient.getEvernoteAllNoteData = getEvernoteAllNoteData;
 })(EvernoteClient = exports.EvernoteClient || (exports.EvernoteClient = {}));
+async function getUser(userStore) {
+    return await userStore.getUser();
+}
 //@ts-ignore
 async function getAllNotebooks(noteStore) {
     //@ts-ignore
