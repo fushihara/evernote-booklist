@@ -10,10 +10,7 @@ const config = {
   express: {
     urlPort: configGet<number>("express.urlPort"),
     urlPrefix: configGet<string>("express.urlPrefix"),
-    token: configGet<string>("express.token"),
-    ACAO: configGet<string>("express.ACAO"),
-  },
-  evernoteDeveloperToken: configGet<string>("evernoteDeveloperToken")
+  }
 };
 
 process.on('unhandledRejection', (reason, _promise) => {
@@ -39,16 +36,29 @@ class Main {
   *     await fetch("http://127.0.0.1:51919/test/yyyy",{method:"post",body:"hoge=aaaaaaaaaaaaaa",headers:{"Content-Type":"application/x-www-form-urlencoded"}})
   */
     app.get(config.express.urlPrefix, async (request: express.Request, response: express.Response) => {
-      const token = String(request.query.token) || ""
-      response.setHeader("Access-Control-Allow-Origin", config.express.ACAO);
-      if (token !== config.express.token) {
+      const token = String(request.query.developer_token || "")
+      const words = String(request.query.words || "")
+      const order = String(request.query.order || "")
+      const ascending = String(request.query.ascending || "") == "1";
+      response.setHeader("Access-Control-Allow-Origin", "*");
+      if (token == "") {
         response.status(403).end();
         return;
       }
-      EvernoteClient.getEvernoteAllNoteData(config.evernoteDeveloperToken).then(noteBookList => {
-        response.status(200).contentType("application/json").json(noteBookList).end();
+      EvernoteClient.getEvernoteAllNoteData({
+        developerToken: token,
+        words,
+        order,
+        ascending
+      }).then(noteBookList => {
+        response.status(200).json(noteBookList).end();
       }).catch((err: any) => {
-        log(err);
+        if (Object(err) === err && err.parameter === "authenticationToken") {
+          log("evernote api 認証失敗");
+          response.status(403).json({}).end();
+          return;
+        }
+        log(JSON.stringify(err, null, "  "));
         response.status(500).end();
         return;
       });

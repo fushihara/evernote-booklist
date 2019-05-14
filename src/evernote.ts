@@ -16,23 +16,35 @@ export namespace EvernoteClient {
     notebookName: string
     notebookGuid: string
   };
-  export async function getEvernoteAllNoteData(developerToken: string): Promise<{userData:UserData,noteBooks:NoteBook[]}> {
-    const client = new Evernote.Client({ token: developerToken, sandbox: false });
+  export async function getEvernoteAllNoteData(args: {
+    developerToken: string,
+    words: string,
+    order: string,
+    ascending: boolean
+  }): Promise<{ userData: UserData, noteBooks: NoteBook[] }> {
+    const client = new Evernote.Client({ token: args.developerToken, sandbox: false });
     const userStore = client.getUserStore();
     const userData = await getUser(userStore);
     const noteStore = client.getNoteStore();
-    const resultUserData :UserData= {
-      id:Number(userData.id),
-      name:String(userData.name),
-      shardId:String(userData.shardId),
-      username:String(userData.username),
+    const resultUserData: UserData = {
+      id: Number(userData.id),
+      name: String(userData.name),
+      shardId: String(userData.shardId),
+      username: String(userData.username),
     }
 
     const allNoteBooks = await getAllNotebooks(noteStore);
     for (let notebook of allNoteBooks) {
       //console.log(notebook.name + "/" + notebook.guid)
     }
-    const allNote = await getAllNote(noteStore);
+    let order = "created";
+    switch (args.order) {
+      case "created":
+      case "updated":
+      case "title":
+        order = args.order;
+    }
+    const allNote = await getAllNote(noteStore, args.words, order as "created" | "updated" | "title", args.ascending);
     const result: NoteBook[] = [];
     for (let note of allNote.notes) {
       const title = note.title;
@@ -57,8 +69,8 @@ export namespace EvernoteClient {
       //console.log(`  ${notebookName}`);
     }
     return {
-      noteBooks:result,
-      userData:resultUserData
+      noteBooks: result,
+      userData: resultUserData
     };
   }
 }
@@ -71,12 +83,18 @@ async function getAllNotebooks(noteStore: Evernote.NoteStoreClient) {
   return await noteStore.listNotebooks();
 }
 //@ts-ignore
-async function getAllNote(noteStore: Evernote.NoteStoreClient) {
+async function getAllNote(noteStore: Evernote.NoteStoreClient, words: string, order: "created" | "updated" | "title", ascending: boolean) {
+  let orderReq = 1;
+  switch (order) {
+    case "created": orderReq = 1; break;
+    case "updated": orderReq = 2; break;
+    case "title": orderReq = 5; break;
+  }
   //@ts-ignore
   const filter = new Evernote.NoteStore.NoteFilter({
-    words: "",
-    ascending: false,
-    order: 2, // 1:created 2:updated 3:RELEVANCE 4:UPDATE_SEQUENCE_NUMBER 5:title
+    words: words,
+    ascending: ascending,
+    order: orderReq, // 1:created 2:updated 3:RELEVANCE 4:UPDATE_SEQUENCE_NUMBER 5:title
   });
   //@ts-ignore
   var spec = new Evernote.NoteStore.NotesMetadataResultSpec({
@@ -87,6 +105,7 @@ async function getAllNote(noteStore: Evernote.NoteStoreClient) {
     includeDeleted: true,
     includeNotebookGuid: true,
   });
+  // https://dev.evernote.com/doc/reference/NoteStore.html#Fn_NoteStore_findNotesMetadata
   //@ts-ignore
   return await noteStore.findNotesMetadata(filter, 0, 500, spec)
 }

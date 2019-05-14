@@ -4,8 +4,8 @@ const Evernote = require("evernote");
 const dateFormat = require("dateformat");
 var EvernoteClient;
 (function (EvernoteClient) {
-    async function getEvernoteAllNoteData(developerToken) {
-        const client = new Evernote.Client({ token: developerToken, sandbox: false });
+    async function getEvernoteAllNoteData(args) {
+        const client = new Evernote.Client({ token: args.developerToken, sandbox: false });
         const userStore = client.getUserStore();
         const userData = await getUser(userStore);
         const noteStore = client.getNoteStore();
@@ -19,7 +19,14 @@ var EvernoteClient;
         for (let notebook of allNoteBooks) {
             //console.log(notebook.name + "/" + notebook.guid)
         }
-        const allNote = await getAllNote(noteStore);
+        let order = "created";
+        switch (args.order) {
+            case "created":
+            case "updated":
+            case "title":
+                order = args.order;
+        }
+        const allNote = await getAllNote(noteStore, args.words, order, args.ascending);
         const result = [];
         for (let note of allNote.notes) {
             const title = note.title;
@@ -59,12 +66,24 @@ async function getAllNotebooks(noteStore) {
     return await noteStore.listNotebooks();
 }
 //@ts-ignore
-async function getAllNote(noteStore) {
+async function getAllNote(noteStore, words, order, ascending) {
+    let orderReq = 1;
+    switch (order) {
+        case "created":
+            orderReq = 1;
+            break;
+        case "updated":
+            orderReq = 2;
+            break;
+        case "title":
+            orderReq = 5;
+            break;
+    }
     //@ts-ignore
     const filter = new Evernote.NoteStore.NoteFilter({
-        words: "",
-        ascending: false,
-        order: 2,
+        words: words,
+        ascending: ascending,
+        order: orderReq,
     });
     //@ts-ignore
     var spec = new Evernote.NoteStore.NotesMetadataResultSpec({
@@ -75,6 +94,7 @@ async function getAllNote(noteStore) {
         includeDeleted: true,
         includeNotebookGuid: true,
     });
+    // https://dev.evernote.com/doc/reference/NoteStore.html#Fn_NoteStore_findNotesMetadata
     //@ts-ignore
     return await noteStore.findNotesMetadata(filter, 0, 500, spec);
 }

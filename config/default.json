@@ -1,9 +1,6 @@
 {
   "express": {
     "urlPrefix": "/evernote-api/",
-    "token":"",
-    "urlPort": 59044,
-    "ACAO":""
-  },
-  "evernoteDeveloperToken":""
+    "urlPort": 59044
+  }
 }

@@ -14,7 +14,12 @@
         notebookName: string;
         notebookGuid: string;
     };
-    function getEvernoteAllNoteData(developerToken: string): Promise<{
+    function getEvernoteAllNoteData(args: {
+        developerToken: string;
+        words: string;
+        order: string;
+        ascending: boolean;
+    }): Promise<{
         userData: UserData;
         noteBooks: NoteBook[];
     }>;
